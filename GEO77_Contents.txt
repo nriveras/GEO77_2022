@@ -1,0 +1,63 @@
+Contents:
++ General introduction
+	Short history and philosophy of R
+	Why R?
+	Resources
+	Installing R and dependencies
+		R and Rstudio
+		R Packages
++ First overview of R
+	Basic commands
+	Setting variables
+		numerical values
+		character values
+		useful commands
+		Matrices and Arrays
+		Factor values
+		Lists and data frames
+		Logical and Integer values
++ RStudio Environment
+	Project
+		Saving data
+	Exercices
+	Additionnal Ressources
+		Philosophy of R and free software
+		History of R language
+		Why R?
+		Formation online
++ References
+Data treatment, overview, analyse and programming basics
++ Data management
+	load data
+		Included data and folder scaning
+	Overview on data
+	Select data
+	Remove or add data
+		NAs values
++ Vector operation
++ Descriptive statistic (already included in summary())
+	Central tendency
+		mean
+		median
+		mode -> no R function
+	min
+	max
+	range
+	sd
+	se (standart error)
+	skewness
+	kurtosis
++ Correlation
+	correlation
+	Spurious relationship
+	prearson correlation coefficient
++ Boxplot
++ Histogram
++ Scatterplot
++ Design options
+	color, pch, size, fill, etc.
++ linear regression (simple? multiple?)
++ geostatistics???
+	Inverse Distance Weighted (IDW)
+	Kriging
+	Regression tree
