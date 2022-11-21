@@ -39,7 +39,7 @@ setwd("C:\Users\EarthShape\Desktop\1-Projects\Earthshape\GEO77_R_course") # an i
 
 -   or go to Session/Set Working Directory/Choose directory... and select folder
 
--   or press Ctrl+Shift+H and select folder
+-   or press `Ctrl+⇧Shift+H` and select folder
 
 **Why?** 
 
