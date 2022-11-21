@@ -3,7 +3,7 @@ title: "Introduction to geostatistics"
 author: "Nicolás Riveras Muñoz"
 date: "`r format(Sys.time(), '%d %B, %Y, %H:%M')`"
 knit: (function(inputFile, encoding) {
-  rmarkdown::render(inputFile, encoding = encoding, output_dir = "output", knit_root_dir = rprojroot::find_rstudio_root_file()) })
+  rmarkdown::render(inputFile, encoding = encoding, output_dir = "docs", output_file =  "index.html", knit_root_dir = rprojroot::find_rstudio_root_file()) })
 output: 
     html_document:
       toc: true
