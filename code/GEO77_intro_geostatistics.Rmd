@@ -525,16 +525,7 @@ lapply(rp, require, character.only = TRUE) 			# load packages
 rm(np, rp) 								# remove vectos
 
 ```
-## Useful script commands
 
-```{r, eval=FALSE}
-object <- read.table("file.txt", sep = "\t", dec = ".", header = TRUE) 
-
-write.table(object, "file.txt", sep = "\t", dec = ".", col.names = TRUE, row.names = FALSE, append = FALSE)
-
-setwd(dirname(rstudioapi::getSourceEditorContext()$path))
-
-```
 # Spatial modeling
 
 Let's start to explore the data with the tools we already know. In this case, we will use the variable P as example.
@@ -597,38 +588,17 @@ points(soil_data$X_coord, soil_data$Y_coord, col ="blue")
 
 ```
 
-### Thiessen Polygon
-
-
-```{r}
-
-dataset.idw<- idw(soil_data$pH ~ 1, location = ~X_coord+Y_coord, soil_data, grd)
-
-image(dataset.idw["var1.pred"],col=topo.colors(20))
-
-points(soil_data$X_coord, soil_data$Y_coord, col ="blue")
-
-library(tripack)
-#Define spatial objects
-coordinates(soil_data) = c("X_coord", "Y_coord")
-# Select the coordinate columns
-cc = coordinates(soil_data)
-# Overlay with IDW interpolation
-plot(voronoi.mosaic(cc[, 1], cc[, 2]), do.points = FALSE, add = TRUE)
-title("Thiessen (orVoronoi) polygon interpolation of pH-Value") 
-
-```
-
-
 ### Kriging
 
 ```{r, eval = FALSE, echo=FALSE}
 # https://mgimond.github.io/Spatial/interpolation-in-r.html#kriging
 ```
 
- 
 
 ```{r}
+
+#Define spatial objects
+coordinates(soil_data) = c("X_coord", "Y_coord")
 # Variogram
 v <- variogram(pH ~ 1, locations = coordinates, data = soil_data, width = cellsize * 0.5)
 # Variogram fit
@@ -662,47 +632,6 @@ Exercise:
 
 +   Tests Simple Kriging in addition to Ordinary Kriging, 
 +   Differences theoretically and in visual evaluation?
-
-
-### Regression kriging
-
-Unlike ordinary kriging, in regression kriging the trend is no longer constant but a
-function of ’explanatory’ variables, for example:
-
-
-$$\text{soil depth(x)}=\beta_0 + \beta_1\cdot\text{elevation(x)}+\beta_2\cdot\text{slope angle(x)}+\beta_3\cdot\text{vegetation density(x)}+\text{residual(x)}$$
-```{r, class.output="scroll-200"}
-
-soil_data <- read.table("data/soil_data.txt", header = TRUE)
-# make spatial
-class(soil_data)
-coordinates(soil_data) <- ~X_coord+Y_coord
-class(soil_data)
-
-# fit a linear regression model and inspect the results
-soil_data.lm <- lm(pH ~ P + coarse_sand, data = soil_data)
-summary(soil_data.lm)
-
-# append residuals to  dataset
-soil_data$residuals <- soil_data.lm$residuals
-
-# define gstat object and compute experimental semivariogram
-v.soil_gstat <- variogram(residuals~1, locations = soil_data, width = cellsize * 0.5)
-v.soil_gstat
-plot(v.soil_gstat, plot.nu=TRUE)
-
-# fit semivariogram model
-fv.soil_gstat <- fit.variogram(v.soil_gstat, fit.method = TRUE, model = vgm(300, "Exp", 0.1))
-
-# Output of the variogram
-plot(v.soil_gstat, model = fv.soil_gstat, cutoff = 800)
-
-# check if the residuals approximately follow a normal distribution
-hist(soil_data$residuals) 
-# here they do so there is no need for a transformation
-
-```
-
 
 #### Model validation
 
