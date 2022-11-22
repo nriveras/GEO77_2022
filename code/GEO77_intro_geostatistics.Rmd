@@ -26,11 +26,13 @@ knitr::opts_chunk$set(echo = TRUE)
 
 #### Setting up a working directory (working directory)
 
+As with most of the projects, we start choosing a working directory to indicate R where are our files.
+
 ```{r, eval=FALSE}
-getwd() # Current working directory 
-setwd("C:/Users/EarthShape/Desktop/1-Projects/Earthshape/GEO77_R_course") 	# Set a working directory
-setwd("C:\\Users\\EarthShape\\Desktop\\1-Projects\\Earthshape\\GEO77_R_course") 	# another valid way to select the same working directory
-setwd("C:\Users\EarthShape\Desktop\1-Projects\Earthshape\GEO77_R_course") # an invalid way of selecting the same working directory
+getwd()                       # Current working directory 
+setwd("C:/GEO77_R_course") 	  # Set a working directory
+setwd("C:\\GEO77_R_course")   # another valid way to select the same working directory
+setwd("C:\GEO77_R_course")    # an invalid way of selecting the same working directory
 ```
 
 #### And if I do not want to write code?
@@ -78,13 +80,14 @@ soil_data %>%
 ```
 
 
-
+#### don't forget!
 <center>
 ![](images/file_different_folder.png){width="200"}
 </center>
 
-### Writing data
-Writing a data set (write.table)
+### Writing data `write.table()`
+
+R also allows to export our output/results in different formats:
 
 ```{r}
 write.table(soil_data, file = "output/this_is_a_copy_of_soil_data_made_with_R.csv", sep = ",",
@@ -92,6 +95,8 @@ write.table(soil_data, file = "output/this_is_a_copy_of_soil_data_made_with_R.cs
 
 ```
 ## Statistical evaluation
+
+When we work with data, is important to describe our data to understand it better. There are a wide variety of statistics used to describe or summarize data in terms of central tendency, shape, position, etc.
 
 ```{r}
 pH <- soil_data$pH
@@ -105,19 +110,26 @@ min(pH)
 max(pH)
 range(pH)
 sd(pH)
+quantile(pH)
 summary(pH)
 ```
 
+
 some functions are not included in base R, but implemented via packages. E.g. `moments`
+
 ```{r}
 library(moments)
 skewness(pH)
 ```
+Skewness indicates if our data distribution is symmetric or not:
+
 ![](images/Negative_and_positive_skewness_diagrams.svg)
 
 ```{r}
 kurtosis(pH)
 ```
+Kurtosis describe is how long is the tail of our data distribution:
+
 ![](images/kurtosis.jpg)
 
 ### Correlation
@@ -177,8 +189,13 @@ When running this command, we obtain a set of 4 plots that are out of the scope 
 
 +   **Residuals vs Fitted **: The residuals are distributed following a systematic pattern around the value 0, indicating that the *linear* regression is not the best. The residuals are also more concentrated in the center, while towards the extremes they show less dispersion, which could indicate heterogeneity among the error variances (heteroscedasticity). Some residuals stand out, indicating the possible presence of outliers.
 +   **Normal Q-Q**: It compares a theoretical normal distribution with the residuals of our model. It should show a straight line for normality assumption and should not show systematic pasterns (should be randomly distributed around that straight line).
++   **Scale-location**: it shows if residuals are spread equally along the ranges of predictors. This is how you can check the assumption of equal variance (homoscedasticity). It’s good if you see a horizontal line with equally (randomly) spread points.
++   **Residuals vs leverage**: Unlike the other plots, this time the patterns are not relevant. We look for outlying values in the upper right or lower left corner. These places are where cases with a large weight in the linear regression can be located. Look for cases outside the dotted lines, which means they have high Cook's distance values.
 
 This is just a visual check, not an air-tight proof, so it is somewhat subjective. But it allows us to see at-a-glance if our assumption is plausible, and if not, how the assumption is violated and what data points contribute to the violation.
+
+Source: [Understanding Diagnostic Plots for Linear Regression Analysis](https://data.library.virginia.edu/diagnostic-plots/#:~:text=Scale%2DLocation,equally%20(randomly)%20spread%20points.)
+
 
 ### Coefficient of determination with Pearson correlation coefficient `cor()`
 
