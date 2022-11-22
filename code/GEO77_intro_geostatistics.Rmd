@@ -190,7 +190,7 @@ When running this command, we obtain a set of 4 plots that are out of the scope 
 +   **Residuals vs Fitted **: The residuals are distributed following a systematic pattern around the value 0, indicating that the *linear* regression is not the best. The residuals are also more concentrated in the center, while towards the extremes they show less dispersion, which could indicate heterogeneity among the error variances (heteroscedasticity). Some residuals stand out, indicating the possible presence of outliers.
 +   **Normal Q-Q**: It compares a theoretical normal distribution with the residuals of our model. It should show a straight line for normality assumption and should not show systematic pasterns (should be randomly distributed around that straight line).
 +   **Scale-location**: it shows if residuals are spread equally along the ranges of predictors. This is how you can check the assumption of equal variance (homoscedasticity). It’s good if you see a horizontal line with equally (randomly) spread points.
-+   **Residuals vs leverage**: Unlike the other plots, this time the patterns are not relevant. We look for outlying values in the upper right or lower left corner. These places are where cases with a large weight in the linear regression can be located. Look for cases outside the dotted lines, which means they have high Cook's distance values.
++   **Residuals vs leverage**: Unlike the other plots, this time the patterns are not relevant. We look for outlying values in the upper or lower right corner. These places are where cases with a large weight in the linear regression can be located. Look for cases outside the dotted lines, which means they have high Cook's distance values.
 
 This is just a visual check, not an air-tight proof, so it is somewhat subjective. But it allows us to see at-a-glance if our assumption is plausible, and if not, how the assumption is violated and what data points contribute to the violation.
 
@@ -385,21 +385,19 @@ axis(side = 1, at = seq(0.5, 8.5, 1), labels = soil_type$Var1)
 If you can't solve it by yourself, you can look at the code and try to understand it, but I encourage you to try.
 
 ```{r, class.source = 'fold-hide', eval=FALSE}
-# Variant A
 soil_type <- as.data.frame(table(soil_data$soil_type_ka4))
-
+# Variant A
 barplot(soil_type$Freq, space = 0, names = soil_type$Var1, 
                     xlab = "Soil type", ylab = "Frequency", 
                     main = "Frequency diagram KA4 Soil types")
-# Variant B
 
+# Variant B
 plot(factor(soil_data$soil_type_ka4), 
                   xlab = "Soil type", 
                   ylab = "Frequency", 
                   main = "Frequency diagram KA4 Soil types")
 
 # Variant C
-soil_type <- as.data.frame(table(soil_data$soil_type_ka4))
 hist(as.numeric(factor(soil_data$soil_type_ka4)),
                   breaks = c(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
                   freq=TRUE,
@@ -407,7 +405,6 @@ hist(as.numeric(factor(soil_data$soil_type_ka4)),
                   xlab = "Soil type",
                   ylab = "Frequency",
                   main = "Frequency diagram KA4 Soil types")
-
 axis(side = 1, at = seq(0.5, 8.5, 1), labels = soil_type$Var1)
 
 ```
