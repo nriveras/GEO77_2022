@@ -45,7 +45,7 @@ download_link(
 ```{r, echo=FALSE}
 ## Link in Github repo
 download_link(
-  link = "https://nriveras.github.io/GEO77_2022/EDA.html/",
+  link = "https://nriveras.github.io/GEO77_2022/EDA.html",
   button_label = "Web version",
   button_type = "default",
   has_icon = TRUE,
@@ -82,7 +82,7 @@ download_link(
 ```{r, echo=FALSE}
 ## Link in Github repo
 download_link(
-  link = "https://nriveras.github.io/GEO77_2022/geostats.html/",
+  link = "https://nriveras.github.io/GEO77_2022/geostats.html",
   button_label = "Web version",
   button_type = "default",
   has_icon = TRUE,
