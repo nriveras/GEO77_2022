@@ -17,7 +17,7 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# Workshop: Introduction to exploratory data analysis
+# Introduction to exploratory data analysis
 
 ```{r, echo=FALSE}
 library(downloadthis)
@@ -54,7 +54,7 @@ download_link(
 )
 ```
 
-# Workshop: Introduction spatial modeling
+# Introduction spatial modeling
 
 
 ```{r, echo=FALSE}
