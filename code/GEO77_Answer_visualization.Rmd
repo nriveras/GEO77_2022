@@ -1,0 +1,43 @@
+---
+title: "Visualization exercise"
+author: "Nicolás Riveras Muñoz"
+date: "`r format(Sys.time(), '%d %B, %Y, %H:%M')`"
+knit: (function(inputFile, encoding) {
+  rmarkdown::render(inputFile, encoding = encoding, output_dir = "docs", output_file =  "aswer_visualization.html", knit_root_dir = rprojroot::find_rstudio_root_file()) })
+output: 
+    html_document:
+      toc: true
+      toc_depth: 3
+      toc_float: false
+      number_sections: true
+      self_contained: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r code, eval=FALSE}
+soil_type <- as.data.frame(table(soil_data$soil_type_ka4))
+
+# Variant A
+barplot(soil_type$Freq, space = 0, names = soil_type$Var1, 
+                    xlab = "Soil type", ylab = "Frequency", 
+                    main = "Frequency diagram KA4 Soil types")
+
+# Variant B
+plot(factor(soil_data$soil_type_ka4), 
+                  xlab = "Soil type", 
+                  ylab = "Frequency", 
+                  main = "Frequency diagram KA4 Soil types")
+
+# Variant C
+hist(as.numeric(factor(soil_data$soil_type_ka4)),
+                  breaks = c(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
+                  freq=TRUE,
+                  xaxt = "n",
+                  xlab = "Soil type",
+                  ylab = "Frequency",
+                  main = "Frequency diagram KA4 Soil types")
+axis(side = 1, at = seq(0.5, 8.5, 1), labels = soil_type$Var1)
+```

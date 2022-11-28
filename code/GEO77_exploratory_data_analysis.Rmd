@@ -11,7 +11,6 @@ output:
       toc_float: true
       number_sections: true
       self_contained: yes
-      code_folding: show
 ---
 
 ```{r setup, include=FALSE}
@@ -19,6 +18,15 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 # Exploratory data analysis in R for spatial modeling
+
+In this chapter, we will see how to explore data to:
+
++   Generate questions about your data.
++   search for answers by visualizing, *transforming* and modeling your data.
++   Use what you learn to refine your questions and/or generate new questions.
+
+This is not a formal process and you should feel free to investigate every idea that occurs to you.
+With the exploratory data analysis we can now the quality of our data, it it meet or not our expectations, if it is necessary to clean, transform, etc.
 
 ## Basic data management
 
@@ -54,7 +62,14 @@ R has the ability to load multiple file formats, which can be further extended t
 Reading a dataset `read.table()`
 
 ```{r}
-soil_data <- read.table("./data/soil_data.txt", header = TRUE)
+# relative file location
+file_location <- "C:/GEO77_R_course/data/soil_data.txt"
+# absolute file location
+file_location <- "./data/soil_data.txt"
+```
+
+```{r}
+soil_data <- read.table(file_location, header = TRUE)
 ```
 ```{r}
 names(soil_data)
@@ -98,7 +113,7 @@ When we work with data, is important to describe our data to understand it bette
 
 ```{r}
 pH <- soil_data$pH
-K <- soil_data$K
+pH_cacl2 <- soil_data$pH_cacl2
 ```
 ### Descriptive statistics
 ```{r}
@@ -111,7 +126,6 @@ sd(pH)
 quantile(pH)
 summary(pH)
 ```
-
 
 some functions are not included in base R, but implemented via packages. E.g. `moments`
 
@@ -151,11 +165,11 @@ Examples:
 So now with our data...
 
 ```{r}
-cor(pH, K)
+cor(pH, pH_cacl2)
 ```
 
 ```{r, echo=FALSE}
-plot(pH, K)
+plot(pH, pH_cacl2)
 ```
 
 [Spurious correlations](http://tylervigen.com/spurious-correlations)
@@ -166,20 +180,14 @@ in R, the linear models are written as `lm(y ~ x, data)`
 
 Example:
 
-```{r}
-# loading some example data
-pH <- c(7.25, 7.91, 5.43, 8.96, 3.21, 4.32, 6.45, 7.22, 9.1, 6.77, 8.43, 5.51, 7.5, 6.64, 4.55, 2.18, 9.79, 7.65)
-Corg <- c(4.23, 3.22, 3.1, 7.39, 3.11, 2.37, 5.51, 5.01, 7.26, 6.4, 6.38, 3.37, 8.29, 6.93, 2.87, 0.12, 7.57, 9.4)
-
-```
-
 ```{r, echo=FALSE}
-plot(pH, Corg)
+
+plot(pH, pH_cacl2)
 ```
 
 ```{r, fig.show="hold", out.width="50%"}
-data <- as.data.frame(cbind(pH, Corg))
-linearModel <- lm(pH ~ Corg , data = data)
+data <- as.data.frame(cbind(pH, pH_cacl2))
+linearModel <- lm(pH ~ pH_cacl2 , data = data)
 summary(linearModel)
 plot(linearModel)
 ```
@@ -232,26 +240,22 @@ rmse <- function(x, y) {
 Requires input
 
 ```{r}
-rmse(linearModel$fitted.values, Corg)
+rmse(linearModel$fitted.values, pH_cacl2)
 ```
 ## Visualization with plots
 
 [The R Graph Gallery](https://www.r-graph-gallery.com/index.html)
 
 ### Boxplots `boxplot()`
-```{r, echo = FALSE}
-pH <- c(7.25, 7.91, 5.43, 8.96, 3.21, 4.32, 6.45, 7.22, 9.1, 6.77, 8.43, 5.51, 7.5, 6.64, 4.55, 2.18, 9.79, 7.65)
-Corg <- c(4.23, 3.22, 3.1, 7.39, 3.11, 2.37, 5.51, 5.01, 7.26, 6.4, 6.38, 3.37, 8.29, 6.93, 2.87, 0.12, 7.57, 9.4)
 
-```
 ```{r}
-boxplot(pH, Corg, names = c("pH value", "Corg content"), ylab = "pH value and Corg content")
+boxplot(pH, pH_cacl2, names = c("pH value", "pH in CaCl2 value"), ylab = "pH in water and CaCl2")
 
 ```
 
 +   Data to be displayed: pH and Corg
-+   Labeling of the x-axis: names = c("pH value", "Corg content")
-+   Labeling of the y-axis: ylab = "pH value and Corg content".
++   Labeling of the x-axis: names = c("pH value", "K content")
++   Labeling of the y-axis: ylab = "pH value and K content".
 
 What does the boxplot show?
 
@@ -279,11 +283,10 @@ plot(density(pH),
 
 ```{r}
 plot(pH, 
-     Corg, 
+     pH_cacl2, 
      xlab = "pH value",
-     ylab = "Corg content"
+     ylab = "pH in CaCl2 value"
      )
-
 ```
 
 ### Design options
@@ -316,7 +319,7 @@ hist(pH,
      xlab = "pH value", 
      ylab = "Frequency", 
      main = "",
-     breaks = seq(0, 10, 2), 
+     breaks = seq(5, 7.5, 0.25), 
      col = "red",
      cex = 0.5
      )
@@ -380,32 +383,11 @@ axis(side = 1, at = seq(0.5, 8.5, 1), labels = soil_type$Var1)
 
 #### Solution
 
-If you can't solve it by yourself, you can look at the code and try to understand it, but I encourage you to try.
+<details><summary>See solution</summary>
 
-```{r, class.source = 'fold-hide', eval=FALSE}
-soil_type <- as.data.frame(table(soil_data$soil_type_ka4))
-# Variant A
-barplot(soil_type$Freq, space = 0, names = soil_type$Var1, 
-                    xlab = "Soil type", ylab = "Frequency", 
-                    main = "Frequency diagram KA4 Soil types")
+[If you can't solve it by yourself, you can look at the code and try to understand it, but I encourage you to try.](https://nriveras.github.io/GEO77_2022/GEO77_Answer_visualization.html)
 
-# Variant B
-plot(factor(soil_data$soil_type_ka4), 
-                  xlab = "Soil type", 
-                  ylab = "Frequency", 
-                  main = "Frequency diagram KA4 Soil types")
-
-# Variant C
-hist(as.numeric(factor(soil_data$soil_type_ka4)),
-                  breaks = c(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
-                  freq=TRUE,
-                  xaxt = "n",
-                  xlab = "Soil type",
-                  ylab = "Frequency",
-                  main = "Frequency diagram KA4 Soil types")
-axis(side = 1, at = seq(0.5, 8.5, 1), labels = soil_type$Var1)
-
-```
+</details>
 
 
 ## Multiple plots in one figure
@@ -477,7 +459,7 @@ par(…)
 dev.off()
 ```
 
-## Do I have to learn all these commands by heart?
+# Do I have to learn all these commands by heart?
 
 **No!** R and Rstudio provide several tools to help us do this:
 
@@ -486,7 +468,7 @@ dev.off()
 + **help**: you can select a function and press `F1`, write `?function`, `help(function)` or `help('function')` in the Rstudio console, and it will display the corresponding documentation for that function in the help panel.
 + **cheatsheets**: It is very common that for the most popular packages there are [cheat sheets](https://rstudio.cloud/learn/cheat-sheets) summarizing the most important functions
 
-## Libraries
+# Libraries
 
 Many functions are not included in the basic version of R. Therefore, there is an almost confusing variety of additional libraries for special applications.
 Examples:
@@ -500,26 +482,28 @@ Examples:
 +   Currently, 18875 available packages in the [CRAN package repository](https://cran.r-project.org/web/checks/check_summary_by_package.html#summary_by_package)
 +   some others available on [Github](https://github.com/)
 
-## How to load a library?
+# How to load a library?
 ![](images/load_library.png)
 
 In the console or the script
 
 ```{r, eval=FALSE, collapse=TRUE}
-install.packages(ggplot2)		# install a library
-library(ggplot2)			    # loading a library
-require(ggplot2)
-detach(ggplot2)			        # Removing a loaded library
+install.packages(ggplot2)	# install a library, this has to be executed only once per environment
 
-rp <- c("DescTools", "rstudioapi") 				# required packages
-ip <- rp[!(rp %in% installed.packages()[, "Package"])] 	# subset packages
+library(ggplot2)			    # loading a library
+detach(ggplot2)			      # Removing a loaded library
+
+# automatic check if packages are installed
+rp <- c("DescTools", "rstudioapi") 				                # required packages
+ip <- rp[!(rp %in% installed.packages()[, "Package"])] 	  # subset packages
 
 if(length(ip)) install.packages(ip, dependencies = TRUE)	# install packages
 
-lapply(rp, require, character.only = TRUE) 			# load packages
-rm(np, rp) 								# remove vectos
+lapply(rp, require, character.only = TRUE) 		           	# load packages
+rm(np, rp) 						                                		# remove vectors used for load files
 
 ```
-## References
+# References
 
-[R for Data Science](https://r4ds.had.co.nz/)
++   [Wickham, H., & Grolemund, G. (2016). R for data science: import, tidy, transform, visualize, and model data. " O'Reilly Media, Inc.".](https://r4ds.had.co.nz/)
++   [Teetor, P. (2011). R cookbook: Proven recipes for data analysis, statistics, and graphics. " O'Reilly Media, Inc.".](https://rc2e.com/)
