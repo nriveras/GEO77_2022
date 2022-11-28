@@ -19,16 +19,27 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 # Spatial modeling
 
-Let's start to explore the data with the tools we already know. In this case, we will use the variable P as example.
+Let's start to explore the data with the tools we already know. In this case, we will use the variable clay as example.
 
 ```{r, echo = FALSE}
 soil_data <- read.table("data/soil_data.txt", header = TRUE)
 ```
 
 ```{r}
-plot(soil_data$X_coord, 
-     soil_data$Y_coord, 
-     cex=soil_data$P*0.05)
+plot(soil_data$x, 
+     soil_data$y, 
+     cex=soil_data$clay*0.05)
+```
+
+We can produce a similar result with more specialized pachages as `sp`
+
+```{r}
+library(sp)
+
+soil_data_copy <- soil_data
+coordinates(soil_data_copy) = ~x + y
+class(soil_data_copy)
+bubble(soil_data_copy,"clay")
 ```
 
 **Model**:
@@ -42,30 +53,25 @@ Image of states or processes of locatable objects and their characteristic value
 +   Position in space (e.g. xy-coordinate)
 +   Attributes/properties (e.g. sand content, carbon content, N, P, K, etc.)
 
-```{r}
-library(sp)
-
-soil_data_copy <- soil_data
-coordinates(soil_data_copy) = ~X_coord + Y_coord
-bubble(soil_data_copy,"pH")
-
-```
-
 ## Interpolation
 
 ```{r}
 library(gstat)
 # Determination of the extension (xmin, xmax, ymin, ymax)
-xmin <- min(soil_data$X_coord) - 100
-xmax <- max(soil_data$X_coord) + 100
-ymin <- min(soil_data$Y_coord) - 100
-ymax <- max(soil_data$Y_coord) + 100
+xmin <- min(soil_data$x) - 100
+xmax <- max(soil_data$x) + 100
+ymin <- min(soil_data$y) - 100
+ymax <- max(soil_data$y) + 100
 # Determination of the resolution (cellsize)
-cellsize = 10
+cellsize = 5000
+
 # Spanning a grid (raster format) for interpolation
-grd<- expand.grid(x=seq(from= xmin, to= xmax, by= cellsize), y=seq(from= ymin, to= ymax, by= cellsize))
+grd<- expand.grid(x=seq(from= xmin, to= xmax, by= cellsize), 
+                  y=seq(from= ymin, to= ymax, by= cellsize))
 coordinates(grd) <- ~ x+y
 gridded(grd) <- TRUE
+
+plot(grd)
 ```
 
 ### IDW
@@ -78,11 +84,11 @@ Gstat library has for this the function
 
 ```{r}
 
-dataset.idw <- idw(soil_data$pH ~ 1, location = ~X_coord+Y_coord, soil_data, grd)
+dataset.idw <- idw(soil_data$clay ~ 1, location = ~x+y, soil_data, grd)
 
-image(dataset.idw["var1.pred"],col=topo.colors(20))
-
-points(soil_data$X_coord, soil_data$Y_coord, col ="blue")
+image(dataset.idw["var1.pred"], col=topo.colors(20))
+points(soil_data$x, soil_data$y)
+title("IDW Interpolation of clay content")
 
 
 ```
@@ -97,14 +103,26 @@ https://pro.arcgis.com/en/pro-app/latest/tool-reference/spatial-analyst/how-krig
 ```
 
 
-```{r}
 
+![](images/Schematic_variogram.svg)
+
+
+
+```{r}
 #Define spatial objects
-coordinates(soil_data) = c("X_coord", "Y_coord")
+coordinates(soil_data) = c("x", "y")
 # Variogram
-v <- variogram(pH ~ 1, locations = coordinates, data = soil_data, width = cellsize * 0.5)
+v <- variogram(clay ~ 1, locations = coordinates, data = soil_data, width = cellsize)
+plot(v)
+```
+
+
+
+
+```{r}
 # Variogram fit
-v.fit <- fit.variogram(v, fit.method = TRUE, model = vgm(0.1, "Gau", 600))
+v.fit <- fit.variogram(v, fit.method = TRUE, model = vgm(100, "Sph", 50000, 60))
+
 # Output of the variogram
 plot(v, model = v.fit)
 
@@ -117,16 +135,31 @@ plot(v, model = v.fit)
 soil_data <- read.table("data/soil_data.txt", header = TRUE)
 
 # ordinary kriging:
-z <- krige(formula = pH ~ 1, locations = ~ X_coord + Y_coord, data = soil_data, newdata = grd, model = v.fit, nmax = 500)
-image(z, col = topo.colors(20))
-points(soil_data$X_coord, soil_data$Y_coord)
-title("Ordinary kriging Interpolation of pH-Value") 
+z <- krige(formula = clay ~ 1, 
+           locations = ~ x + y, 
+           data = soil_data, 
+           newdata = grd, 
+           model = v.fit, 
+           nmax = 500)
 
+image(z, col = topo.colors(20))
+points(soil_data$x, soil_data$y)
+title("Ordinary kriging Interpolation of clay content") 
+```
+
+```{r}
 
 # simple kriging:
-z <- krige(pH ~ 1, locations = ~ X_coord + Y_coord, data = soil_data, newdata = grd, model = v.fit, nmax = 500, beta = mean(soil_data$pH))
-image(z, col = topo.colors(20))
-points(soil_data$X_coord, soil_data$Y_coord)
+y <- krige(clay ~ 1, 
+           locations = ~ x + y, 
+           data = soil_data, 
+           newdata = grd, 
+           model = v.fit, 
+           nmax = 500, 
+           beta = mean(soil_data$clay))
+
+image(y, col = topo.colors(20))
+points(soil_data$x, soil_data$y)
 title("Simple kriging Interpolation of pH-Value") 
 ```
 
@@ -140,7 +173,7 @@ Exercise:
 ```{r}
 soil_data <- read.table("data/soil_data.txt", header = TRUE)
 
-x <- krige.cv(pH ~ 1, ~ X_coord+Y_coord, data = soil_data, maxdist = 500, nfold = 10)
+x <- krige.cv(clay ~ 1, ~ x+y, data = soil_data, nfold = 99)
 
 cor(x$observed, x$var1.pred) * cor(x$observed, x$var1.pred) # Rsquared
 

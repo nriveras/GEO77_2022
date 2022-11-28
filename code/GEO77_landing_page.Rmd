@@ -57,7 +57,7 @@ download_link(
 ```{r, echo=FALSE}
 ## Link in Github repo
 download_link(
-  link = "https://github.com/nriveras/GEO77_2022/blob/main/GEO77_Info_WS2223_ENG.pdf?raw=true",
+  link = "https://github.com/nriveras/GEO77_2022/blob/main/data/ExampleFromGermany.zip?raw=true",
   button_label = "dataset",
   button_type = "default",
   has_icon = TRUE,
