@@ -36,9 +36,14 @@ We can produce a similar result with more specialized pachages as `sp`
 ```{r}
 library(sp)
 
+# lets make a copy to use the raw data later
 soil_data_copy <- soil_data
+
+# We can transform the data as spatial 
 coordinates(soil_data_copy) = ~x + y
 class(soil_data_copy)
+
+# and give the spatial object to the function bubble
 bubble(soil_data_copy,"clay")
 ```
 
@@ -66,19 +71,17 @@ ymax <- max(soil_data$y) + 100
 cellsize = 5000
 
 # Spanning a grid (raster format) for interpolation
-grd<- expand.grid(x=seq(from= xmin, to= xmax, by= cellsize), 
-                  y=seq(from= ymin, to= ymax, by= cellsize))
+grd <- expand.grid(x=seq(from = xmin, to = xmax, by = cellsize), 
+                   y=seq(from = ymin, to = ymax, by = cellsize))
 coordinates(grd) <- ~ x+y
 gridded(grd) <- TRUE
-
-plot(grd)
 ```
 
 ### IDW
 
-Inverse distance weighted (IDW) interpolation explicitly makes the assumption that things that are close to one another are more alike than those that are farther apart. To predict a value for any unmeasured location, IDW uses the measured values surrounding the prediction location. The measured values closest to the prediction location have more influence on the predicted value than those farther away. IDW assumes that each measured point has a local influence that diminishes with distance. It gives greater weights to points closest to the prediction location, and the weights diminish as a function of distance, hence the name inverse distance weighted.
+Inverse distance weighted (IDW) interpolation explicitly makes the assumption that things that are close to one another are more alike than those that are farther apart. To predict a value for any unmeasured location, IDW uses the measured values surrounding the prediction location. The measured values closest to the prediction location have more influence on the predicted value than those farther away. IDW assumes that each measured point has a local influence that diminishes with distance. It gives greater weights to points closest to the prediction location, and the weights diminish as a function of distance, hence the name inverse distance weighted. Inverse distance weighted (IDW) interpolation determines cell values using a **linearly** weighted combination of a set of sample points.
 
-https://pro.arcgis.com/de/pro-app/latest/help/analysis/geostatistical-analyst/how-inverse-distance-weighted-interpolation-works.htm
+[source: How IDW works](https://pro.arcgis.com/de/pro-app/latest/help/analysis/geostatistical-analyst/how-inverse-distance-weighted-interpolation-works.htm)
 
 Gstat library has for this the function 
 
@@ -89,30 +92,31 @@ dataset.idw <- idw(soil_data$clay ~ 1, location = ~x+y, soil_data, grd)
 image(dataset.idw["var1.pred"], col=topo.colors(20))
 points(soil_data$x, soil_data$y)
 title("IDW Interpolation of clay content")
-
-
 ```
 
 ### Kriging
 
+Kriging is an advanced geostatistical procedure that generates an estimated surface from a scattered set of points with z-values. Kriging is based on statistical models that include autocorrelation—that is, the statistical relationships among the measured points. Because of this, it not only have the capability of producing a prediction surface but also **provide some measure of the certainty or accuracy of the predictions**.
 
-https://pro.arcgis.com/en/pro-app/latest/tool-reference/spatial-analyst/how-kriging-works.htm
+Kriging assumes that the distance or direction between sample points reflects a **spatial correlation** that can be used to explain variation in the surface. The Kriging tool fits a mathematical function to a specified number of points, or all points within a specified radius, to determine the output value for each location. Kriging is a multistep process:
+
++   exploratory statistical analysis of the data, 
++   variogram modeling, 
++   creating the surface, and 
++   (optionally) exploring a variance surface
+
+[source: How Kriging works](https://pro.arcgis.com/en/pro-app/latest/tool-reference/spatial-analyst/how-kriging-works.htm)
 
 ```{r, eval = FALSE, echo=FALSE}
 # https://mgimond.github.io/Spatial/interpolation-in-r.html#kriging
 ```
 
-
-
 ![](images/Schematic_variogram.svg)
 
 
-
 ```{r}
-#Define spatial objects
-coordinates(soil_data) = c("x", "y")
 # Variogram
-v <- variogram(clay ~ 1, locations = coordinates, data = soil_data, width = cellsize)
+v <- variogram(clay ~ 1, locations = ~ x + y, data = soil_data, width = cellsize)
 plot(v)
 ```
 
@@ -132,8 +136,6 @@ plot(v, model = v.fit)
 
 ```{r}
 
-soil_data <- read.table("data/soil_data.txt", header = TRUE)
-
 # ordinary kriging:
 z <- krige(formula = clay ~ 1, 
            locations = ~ x + y, 
@@ -148,7 +150,6 @@ title("Ordinary kriging Interpolation of clay content")
 ```
 
 ```{r}
-
 # simple kriging:
 y <- krige(clay ~ 1, 
            locations = ~ x + y, 
@@ -160,7 +161,7 @@ y <- krige(clay ~ 1,
 
 image(y, col = topo.colors(20))
 points(soil_data$x, soil_data$y)
-title("Simple kriging Interpolation of pH-Value") 
+title("Simple kriging Interpolation of clay content") 
 ```
 
 Exercise:
@@ -170,15 +171,25 @@ Exercise:
 
 #### Model validation
 
-```{r}
-soil_data <- read.table("data/soil_data.txt", header = TRUE)
+To validate the data, is a good idea to separate the data in train and test data. But...
 
-x <- krige.cv(clay ~ 1, ~ x+y, data = soil_data, nfold = 99)
++   In how many parts should I divide the data?
++   Which of those divisions should I use?
+
+An easy way to solve this is using k-fold-cross-validation, in this case, we will use 10-fold
+
+
+```{r}
+
+x <- krige.cv(clay ~ 1, 
+              locations = ~ x+y, 
+              data = soil_data, 
+              nfold = 10)
 
 cor(x$observed, x$var1.pred) * cor(x$observed, x$var1.pred) # Rsquared
 
 sqr_error <- (x$var1.pred - x$observed )^2
-sqrt(sum(sqr_error)/length(sqr_error))		 # RMSE
+sqrt(sum(sqr_error)/length(sqr_error))		            # RMSE
 ```
 # References
 
