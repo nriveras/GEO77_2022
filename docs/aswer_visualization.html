@@ -351,33 +351,33 @@ display: none;
 
 <h1 class="title toc-ignore">Visualization exercise</h1>
 <h4 class="author">Nicolás Riveras Muñoz</h4>
-<h4 class="date">28 November, 2022, 14:46</h4>
+<h4 class="date">28 November, 2022, 18:04</h4>
 
 </div>
 
 
-<pre class="r"><code>soil_type &lt;- as.data.frame(table(soil_data$soil_type_ka4))
+<pre class="r"><code>pH_class_count &lt;- as.data.frame(table(soil_data$pH_class))
 
 # Variant A
-barplot(soil_type$Freq, space = 0, names = soil_type$Var1, 
-                    xlab = &quot;Soil type&quot;, ylab = &quot;Frequency&quot;, 
-                    main = &quot;Frequency diagram KA4 Soil types&quot;)
+barplot(pH_class_count$Freq, space = 0, names = pH_class_count$Var1, 
+        xlab = &quot;pH class&quot;, ylab = &quot;Frequency&quot;, 
+        main = &quot;Frequency diagram of pH classes&quot;) 
 
 # Variant B
-plot(factor(soil_data$soil_type_ka4), 
-                  xlab = &quot;Soil type&quot;, 
-                  ylab = &quot;Frequency&quot;, 
-                  main = &quot;Frequency diagram KA4 Soil types&quot;)
+plot(factor(soil_data$pH_class), 
+     xlab = &quot;pH class&quot;, 
+     ylab = &quot;Frequency&quot;, 
+     main = &quot;Frequency diagram of pH classes&quot;)
 
 # Variant C
-hist(as.numeric(factor(soil_data$soil_type_ka4)),
-                  breaks = c(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
-                  freq=TRUE,
-                  xaxt = &quot;n&quot;,
-                  xlab = &quot;Soil type&quot;,
-                  ylab = &quot;Frequency&quot;,
-                  main = &quot;Frequency diagram KA4 Soil types&quot;)
-axis(side = 1, at = seq(0.5, 8.5, 1), labels = soil_type$Var1)</code></pre>
+hist(as.numeric(factor(soil_data$pH_class)),
+     breaks = c(0, 1, 2, 3),
+     freq = TRUE,
+     xaxt = &quot;n&quot;,
+     xlab = &quot;pH class&quot;,
+     ylab = &quot;Frequency&quot;,
+     main = &quot;Frequency diagram of pH classes&quot;)
+axis(side = 1, at = seq(0.5, 2.5, 1), labels = pH_class_count$Var1)</code></pre>
 
 
 

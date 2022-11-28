@@ -18,26 +18,26 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r code, eval=FALSE}
-soil_type <- as.data.frame(table(soil_data$soil_type_ka4))
+pH_class_count <- as.data.frame(table(soil_data$pH_class))
 
 # Variant A
-barplot(soil_type$Freq, space = 0, names = soil_type$Var1, 
-                    xlab = "Soil type", ylab = "Frequency", 
-                    main = "Frequency diagram KA4 Soil types")
+barplot(pH_class_count$Freq, space = 0, names = pH_class_count$Var1, 
+        xlab = "pH class", ylab = "Frequency", 
+        main = "Frequency diagram of pH classes") 
 
 # Variant B
-plot(factor(soil_data$soil_type_ka4), 
-                  xlab = "Soil type", 
-                  ylab = "Frequency", 
-                  main = "Frequency diagram KA4 Soil types")
+plot(factor(soil_data$pH_class), 
+     xlab = "pH class", 
+     ylab = "Frequency", 
+     main = "Frequency diagram of pH classes")
 
 # Variant C
-hist(as.numeric(factor(soil_data$soil_type_ka4)),
-                  breaks = c(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
-                  freq=TRUE,
-                  xaxt = "n",
-                  xlab = "Soil type",
-                  ylab = "Frequency",
-                  main = "Frequency diagram KA4 Soil types")
-axis(side = 1, at = seq(0.5, 8.5, 1), labels = soil_type$Var1)
+hist(as.numeric(factor(soil_data$pH_class)),
+     breaks = c(0, 1, 2, 3),
+     freq = TRUE,
+     xaxt = "n",
+     xlab = "pH class",
+     ylab = "Frequency",
+     main = "Frequency diagram of pH classes")
+axis(side = 1, at = seq(0.5, 2.5, 1), labels = pH_class_count$Var1)
 ```

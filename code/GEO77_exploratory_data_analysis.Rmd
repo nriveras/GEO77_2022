@@ -112,8 +112,13 @@ write.table(soil_data, file = "output/this_is_a_copy_of_soil_data_made_with_R.cs
 When we work with data, is important to describe our data to understand it better. There are a wide variety of statistics used to describe or summarize data in terms of central tendency, shape, position, etc.
 
 ```{r}
+# We separate only two properties to make easier to work with them
 pH <- soil_data$pH
-pH_cacl2 <- soil_data$pH_cacl2
+OC <- soil_data$OC
+N <- soil_data$N
+
+# and we also create a data.frame with those 3 variables (only for easy handling)
+data <- as.data.frame(cbind(pH, OC, N))
 ```
 ### Descriptive statistics
 ```{r}
@@ -125,6 +130,8 @@ range(pH)
 sd(pH)
 quantile(pH)
 summary(pH)
+
+# TABLE
 ```
 
 some functions are not included in base R, but implemented via packages. E.g. `moments`
@@ -165,11 +172,11 @@ Examples:
 So now with our data...
 
 ```{r}
-cor(pH, pH_cacl2)
+cor(OC, N)
 ```
 
 ```{r, echo=FALSE}
-plot(pH, pH_cacl2)
+plot(OC, N)
 ```
 
 [Spurious correlations](http://tylervigen.com/spurious-correlations)
@@ -180,18 +187,18 @@ in R, the linear models are written as `lm(y ~ x, data)`
 
 Example:
 
-```{r, echo=FALSE}
-
-plot(pH, pH_cacl2)
-```
 
 ```{r, fig.show="hold", out.width="50%"}
-data <- as.data.frame(cbind(pH, pH_cacl2))
-linearModel <- lm(pH ~ pH_cacl2 , data = data)
+linearModel <- lm(OC ~ N , data = data)
 summary(linearModel)
+```
+<details><summary>Some more functions for the curious ones</summary>
+
+
+```{r}  
 plot(linearModel)
 ```
-When running this command, we obtain a set of 4 plots that are out of the scope of this "introduction", but for the curious ones:
+When running this command, we obtain a set of 4 plots that are out of the scope of this "introduction", but:
 
 +   **Residuals vs Fitted **: The residuals are distributed following a systematic pattern around the value 0, indicating that the *linear* regression is not the best. The residuals are also more concentrated in the center, while towards the extremes they show less dispersion, which could indicate heterogeneity among the error variances (heteroscedasticity). Some residuals stand out, indicating the possible presence of outliers.
 +   **Normal Q-Q**: It compares a theoretical normal distribution with the residuals of our model. It should show a straight line for normality assumption and should not show systematic pasterns (should be randomly distributed around that straight line).
@@ -201,7 +208,7 @@ When running this command, we obtain a set of 4 plots that are out of the scope 
 This is just a visual check, not an air-tight proof, so it is somewhat subjective. But it allows us to see at-a-glance if our assumption is plausible, and if not, how the assumption is violated and what data points contribute to the violation.
 
 Source: [Understanding Diagnostic Plots for Linear Regression Analysis](https://data.library.virginia.edu/diagnostic-plots/#:~:text=Scale%2DLocation,equally%20(randomly)%20spread%20points.)
-
+</details>
 
 ### Coefficient of determination with Pearson correlation coefficient `cor()`
 
@@ -210,8 +217,7 @@ $$R^2≡1-\frac{\sum(y_{i}-\hat{y_{i}})^2}{\sum(y_{i}-\overline{y})^2}$$
 $$R^2=r×r$$
 
 ```{r}
-cor(data$pH, linearModel$fitted.values) * 
-cor(data$pH, linearModel$fitted.values)
+cor(OC, linearModel$fitted.values) * cor(OC, linearModel$fitted.values)
 ```
 
 ### root mean squared error (RMSE)
@@ -219,7 +225,8 @@ cor(data$pH, linearModel$fitted.values)
 $$RMSE=\sqrt{\frac{1}{n}\sum_{i = 1}^{n}{(\hat{y_{i}}-y_{i})^2}}$$
 
 ```{r}
-sqrt(1 / length(rbind(linearModel$residuals * sum(rbind(linearModel$residuals) ^ 2))))
+
+sqrt(1 / length(rbind(linearModel$residuals)) * sum(rbind(linearModel$residuals) ^ 2))
 
 ```
 ### Function for the root mean squared error (RMSE)
@@ -230,6 +237,9 @@ Base R does not include a function for RMSE in base R, but in R we can create cu
 function_name <- function(input_x, input_y, ...) {
   some_operations
 }
+```
+
+Let\'s create our own RMSE function: 
 
 ```{r}
 rmse <- function(x, y) {
@@ -240,7 +250,7 @@ rmse <- function(x, y) {
 Requires input
 
 ```{r}
-rmse(linearModel$fitted.values, pH_cacl2)
+rmse(linearModel$fitted.values, OC)
 ```
 ## Visualization with plots
 
@@ -249,13 +259,13 @@ rmse(linearModel$fitted.values, pH_cacl2)
 ### Boxplots `boxplot()`
 
 ```{r}
-boxplot(pH, pH_cacl2, names = c("pH value", "pH in CaCl2 value"), ylab = "pH in water and CaCl2")
+boxplot(pH, N, names = c("pH value", "N [%]"), ylab = "pH in water and N")
 
 ```
 
 +   Data to be displayed: pH and Corg
-+   Labeling of the x-axis: names = c("pH value", "K content")
-+   Labeling of the y-axis: ylab = "pH value and K content".
++   Labeling of the x-axis: names = c("pH value", "N [%]").
++   Labeling of the y-axis: ylab = "pH in water and N".
 
 What does the boxplot show?
 
@@ -272,7 +282,7 @@ hist(pH,
 ### Density plots `plot(density()`
 
 ```{r}
-plot(density(pH), 
+plot(density(pH),
      xlab = "pH value",
      ylab = "Frequency", 
      main = ""
@@ -282,10 +292,10 @@ plot(density(pH),
 ### Scatterplots `plot(x, y)`
 
 ```{r}
-plot(pH, 
-     pH_cacl2, 
-     xlab = "pH value",
-     ylab = "pH in CaCl2 value"
+plot(N, 
+     OC, 
+     xlab = "OC [%]",
+     ylab = "N [%]"
      )
 ```
 
@@ -319,7 +329,7 @@ hist(pH,
      xlab = "pH value", 
      ylab = "Frequency", 
      main = "",
-     breaks = seq(5, 7.5, 0.25), 
+     breaks = seq(3.5, 8.5, 0.125), 
      col = "red",
      cex = 0.5
      )
@@ -330,55 +340,58 @@ hist(pH,
 
 When working with code, it is very common that there are several ways to solve the same problem.
 
-**Exercise:** Frequency distribution grain size types KA4
+**Exercise:** 
 
-+   Calculate all statistical parameters Create boxplots and histograms for clay content and pH (CaCl~2~)
-+   Calculate correlations between for clay content, pH (CaCl~2~) and all other parameters
-+   Evaluation of the results
++   Calculate all the statistical parameters for one different variable
++   Create boxplots and histograms for clay content and P
++   Calculate correlations between clay content, OC, N, and P
 
-And now for the frequency distribution grain size types KA4!
++   And now for the frequency distribution of pH_class, create one of the next plots with the tools we already saw.
 
-**Hint:** The three different version are made with a `barplot()`, `plot()` and `hist()` 
+In the variable pH_class, pH is classified as:
+
++   **neutral**: 6.5 to 7.5
++   **alkaline**: over 7.5
++   **acidic**: less than 6.5
+
+**Hint: The three different version are made with a `barplot()`, `plot()` and `hist()`**
 
 ```{r, echo = FALSE}
-soil_data <- read.table("data/soil_data.txt", header = TRUE)
+
+pH_class_count <- as.data.frame(table(soil_data$pH_class))
+
 ```
 
 ### Variant A
 
 ```{r, echo = FALSE}
-
-soil_type <- as.data.frame(table(soil_data$soil_type_ka4))
-
-barplot(soil_type$Freq, space = 0, names = soil_type$Var1, 
-                    xlab = "Soil type", ylab = "Frequency", 
-                    main = "Frequency diagram KA4 Soil types") 
-
+barplot(pH_class_count$Freq, space = 0, names = pH_class_count$Var1, 
+                    xlab = "pH class", ylab = "Frequency", 
+                    main = "Frequency diagram of pH classes") 
 ```
 
 ### Variant B
 
 ```{r, echo = FALSE}
 
-plot(factor(soil_data$soil_type_ka4), 
-                  xlab = "Soil type", 
-                  ylab = "Frequency", 
-                  main = "Frequency diagram KA4 Soil types")
+plot(factor(soil_data$pH_class), 
+     xlab = "pH class", 
+     ylab = "Frequency", 
+     main = "Frequency diagram of pH classes")
 ```
 
 ### Variant C
 
 ```{r, echo = FALSE}
-soil_type <- as.data.frame(table(soil_data$soil_type_ka4))
-hist(as.numeric(factor(soil_data$soil_type_ka4)),
-                  breaks = c(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
-                  freq = TRUE,
-                  xaxt = "n",
-                  xlab = "Soil type",
-                  ylab = "Frequency",
-                  main = "Frequency diagram KA4 Soil types")
+hist(as.numeric(factor(soil_data$pH_class)),
+     breaks = c(0, 1, 2, 3),
+     freq = TRUE,
+     xaxt = "n",
+     xlab = "pH class",
+     ylab = "Frequency",
+     main = "Frequency diagram of pH classes")
 
-axis(side = 1, at = seq(0.5, 8.5, 1), labels = soil_type$Var1)
+axis(side = 1, at = seq(0.5, 2.5, 1), labels = pH_class_count$Var1)
 ```
 
 #### Solution
@@ -421,27 +434,28 @@ par(mfrow = c(1, 1),
 
 ```{r, echo=FALSE, fig.show="hold", out.width="33%"}
 par(mar = c(5.1, 4.1, 4.1, 2.1))
-soil_type <- as.data.frame(table(soil_data$soil_type_ka4))
 
-barplot(soil_type$Freq, space = 0, names = soil_type$Var1, 
-                    xlab = "Soil type", ylab = "Frequency", 
-                    main = "Frequency diagram KA4 Soil types")
+# Variant A
+barplot(pH_class_count$Freq, space = 0, names = pH_class_count$Var1, 
+        xlab = "pH class", ylab = "Frequency", 
+        main = "Frequency diagram of pH classes") 
 
-plot(factor(soil_data$soil_type_ka4), 
-                  xlab = "Soil type", 
-                  ylab = "Frequency", 
-                  main = "Frequency diagram KA4 Soil types")
-soil_type <- as.data.frame(table(soil_data$soil_type_ka4))
-hist(as.numeric(factor(soil_data$soil_type_ka4)),
-                  breaks = c(0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
-                  freq=TRUE,
-                  xaxt = "n",
-                  xlab = "Soil type",
-                  ylab = "Frequency",
-                  main = "Frequency diagram KA4 Soil types")
+# Variant B
+plot(factor(soil_data$pH_class), 
+     xlab = "pH class", 
+     ylab = "Frequency", 
+     main = "Frequency diagram of pH classes")
 
-axis(side = 1, at = seq(0.5, 8.5, 1), labels = soil_type$Var1)
+# Variant C
+hist(as.numeric(factor(soil_data$pH_class)),
+     breaks = c(0, 1, 2, 3),
+     freq = TRUE,
+     xaxt = "n",
+     xlab = "pH class",
+     ylab = "Frequency",
+     main = "Frequency diagram of pH classes")
 
+axis(side = 1, at = seq(0.5, 2.5, 1), labels = pH_class_count$Var1)
 
 ```
 
@@ -458,6 +472,7 @@ par(…)
 
 dev.off()
 ```
+Plot export can be done in most of the image formats. E.g. .png, .jpg, .svg, etc. 
 
 # Do I have to learn all these commands by heart?
 
@@ -488,19 +503,10 @@ Examples:
 In the console or the script
 
 ```{r, eval=FALSE, collapse=TRUE}
-install.packages(ggplot2)	# install a library, this has to be executed only once per environment
+install.packages(ggplot2)      # install a library, this has to be executed only once per environment
 
-library(ggplot2)			    # loading a library
-detach(ggplot2)			      # Removing a loaded library
-
-# automatic check if packages are installed
-rp <- c("DescTools", "rstudioapi") 				                # required packages
-ip <- rp[!(rp %in% installed.packages()[, "Package"])] 	  # subset packages
-
-if(length(ip)) install.packages(ip, dependencies = TRUE)	# install packages
-
-lapply(rp, require, character.only = TRUE) 		           	# load packages
-rm(np, rp) 						                                		# remove vectors used for load files
+library(ggplot2)			         # loading a library
+detach(ggplot2)			           # Removing a loaded library
 
 ```
 # References
