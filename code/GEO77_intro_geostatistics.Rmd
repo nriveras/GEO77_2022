@@ -37,14 +37,14 @@ We can produce a similar result with more specialized pachages as `sp`
 library(sp)
 
 # lets make a copy to use the raw data later
-soil_data_copy <- soil_data
+soil_data_sp <- soil_data
 
 # We can transform the data as spatial 
-coordinates(soil_data_copy) = ~x + y
-class(soil_data_copy)
+coordinates(soil_data_sp) = ~x + y
+class(soil_data_sp)
 
 # and give the spatial object to the function bubble
-bubble(soil_data_copy,"clay")
+bubble(soil_data_sp,"clay")
 ```
 
 **Model**:
@@ -60,6 +60,8 @@ Image of states or processes of locatable objects and their characteristic value
 
 ## Interpolation
 
+We want to interpolate data to fill the gaps where we do not have observations, the way to do this is creating and empty raster and then filling it with the new data.
+
 ```{r}
 library(gstat)
 # Determination of the extension (xmin, xmax, ymin, ymax)
@@ -67,6 +69,11 @@ xmin <- min(soil_data$x) - 100
 xmax <- max(soil_data$x) + 100
 ymin <- min(soil_data$y) - 100
 ymax <- max(soil_data$y) + 100
+```
+
+**Be careful with the variable cellsize, it determines how many calculations we will do to populate it.
+
+```{r}
 # Determination of the resolution (cellsize)
 cellsize = 5000
 
@@ -168,6 +175,11 @@ Exercise:
 
 +   Tests Simple Kriging in addition to Ordinary Kriging, 
 +   Differences theoretically and in visual evaluation?
++   Interpolate OC of the soil_data.txt using ordinary kriging
+    +   What model did you use?
+    +   What sill?
+    +   What range?
+    +   What nugget?
 
 #### Model validation
 
@@ -191,6 +203,49 @@ cor(x$observed, x$var1.pred) * cor(x$observed, x$var1.pred) # Rsquared
 sqr_error <- (x$var1.pred - x$observed )^2
 sqrt(sum(sqr_error)/length(sqr_error))		            # RMSE
 ```
+## Feature extraction
+
+We can also extract data to our points for some already existing raster 
+
+
+```{r}
+library(raster)
+
+# Load a raster stack from an external files
+terrain.lst <- list.files("./data/ExampleFromGermany/SAGA", pattern="\\.sdat$", full.names = TRUE)
+terrain.raster = raster::stack(terrain.lst)
+
+# plot to see SAGA is working well
+plot(terrain.raster$DEM)
+plot(terrain.raster)
+
+# set projection of the data points (transformed to spatial object)
+proj4string(soil_data_sp) <- CRS("+proj=utm +zone=32 +datum=WGS84 +units=m +no_defs")
+
+# plot the point on the raster
+plot(terrain.raster$DEM, main = "DEM + Sample Points")
+plot(soil_data_sp, add = TRUE, pch = 1)
+
+# extract values
+terrain_cov = raster::extract(terrain.raster,
+                              soil_data_sp,
+                              method = 'simple')
+
+# combing the covariates + soil data
+cov_soil = cbind(data.frame(terrain_cov), clay= soil_data_sp$clay)
+
+# inspect the covariates + soil data 
+str(cov_soil)
+
+```
+```{r, echo=FALSE, message=FALSE}
+library(dplyr)
+cov_soil %>%
+  kableExtra::kbl() %>%
+  kableExtra::kable_classic(full_width = T, html_font = "Cambria", lightable_options = "basic") %>%
+  kableExtra::scroll_box(width = "100%", height = "200px")
+```
+
 # References
 
 +   [Geocomputation with R](https://geocompr.robinlovelace.net/index.html)

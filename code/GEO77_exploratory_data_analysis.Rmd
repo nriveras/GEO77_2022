@@ -131,7 +131,12 @@ sd(pH)
 quantile(pH)
 summary(pH)
 
-# TABLE
+# For factors, is interesting to describe how many observations belong to each category
+
+pH_class_count <- as.data.frame(table(soil_data$pH_class))
+
+pH_class_count
+
 ```
 
 some functions are not included in base R, but implemented via packages. E.g. `moments`
